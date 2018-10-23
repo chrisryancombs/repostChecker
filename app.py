@@ -66,7 +66,7 @@ class findPosts(Thread):
                 top = False
                 hot = True
                 # first get 50 posts from the top of the subreddit
-                inserts = [][] # dates, contenturls, media, urls, texts, authors, scores, titles     
+                inserts = [][] # dates, contenturls, media, urls, texts, authors, titles     
                 for submission in subreddit.top('all', limit=limitVal):
                     while True:
                         if (not self.q.empty()) or firstTime:
@@ -100,8 +100,7 @@ class findPosts(Thread):
                                     inserts[3].append(submission.permalink)
                                     inserts[4].append(submission.selftext)
                                     inserts[5].append(submission.author)
-                                    inserts[6].append(submission.score)
-                                    inserts[7].append(submission.score)
+                                    inserts[6].append(submission.title)
 
                                 with self.q.mutex:
                                     self.q.queue.clear()
@@ -116,7 +115,6 @@ class findPosts(Thread):
                                         inserts[4]
                                         inserts[5]
                                         inserts[6]
-                                        inserts[7]
                                         top,
                                         hot,
                                         new,
@@ -168,7 +166,7 @@ class findPosts(Thread):
                                     self.subSettings,
                                     reddit,
                                 )
-                                if result != [['delete', -1, -1, -1, -1, -1, -1]] and (result == [] or submission.created_utc != result[0][2]):
+                                if result != [['delete', -1, -1, -1, -1, -1]] and (result == [] or submission.created_utc != result[0][2]):
                                     database.addPost(
                                         submission.created_utc,
                                         submission.url,
@@ -176,7 +174,6 @@ class findPosts(Thread):
                                         submission.permalink,
                                         submission.selftext,
                                         submission.author,
-                                        submission.score,
                                         submission.title,
                                         top,
                                         hot,
@@ -233,7 +230,7 @@ class findPosts(Thread):
                                     self.subSettings,
                                     reddit,
                                 )
-                                if result != [['delete', -1, -1, -1, -1, -1, -1]] and (result == [] or submission.created_utc != result[0][2]):
+                                if result != [['delete', -1, -1, -1, -1, -1]] and (result == [] or submission.created_utc != result[0][2]):
                                     database.addPost(
                                         submission.created_utc,
                                         submission.url,
@@ -241,7 +238,6 @@ class findPosts(Thread):
                                         submission.permalink,
                                         submission.selftext,
                                         submission.author,
-                                        submission.score,
                                         submission.title,
                                         top,
                                         hot,
@@ -252,7 +248,7 @@ class findPosts(Thread):
                                         post,
                                         submission.permalink,
                                     ))
-                                if result != [] and result != [['delete', -1, -1, -1, -1, -1, -1]]:
+                                if result != [] and result != [['delete', -1, -1, -1, -1, -1]]:
                                     print('reported')
                                     # report and make a comment
                                     submission.report('REPOST ALERT')
@@ -262,7 +258,7 @@ class findPosts(Thread):
                                         table = '{}{}|[{}](https://reddit.com{})|{}|{}%|{}\n'.format(
                                             table,
                                             str(cntr),
-                                            i[6],
+                                            i[5],
                                             i[0],
                                             i[1],
                                             str(i[3]),
