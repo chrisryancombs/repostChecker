@@ -66,6 +66,7 @@ class findPosts(Thread):
                 top = False
                 hot = True
                 # first get 50 posts from the top of the subreddit
+                inserts = [][] # dates, contenturls, media, urls, texts, authors, scores, titles     
                 for submission in subreddit.top('all', limit=limitVal):
                     while True:
                         if (not self.q.empty()) or firstTime:
@@ -93,28 +94,38 @@ class findPosts(Thread):
                                 )
 
                                 if result != [['delete', -1, -1, -1, -1, -1, -1]] and (result == [] or submission.created_utc != result[0][2]):
-                                    database.addPost(
-                                        submission.created_utc,
-                                        submission.url,
-                                        submission.media,
-                                        submission.permalink,
-                                        submission.selftext,
-                                        submission.author,
-                                        submission.score,
-                                        submission.title,
+                                    inserts[0].append(submission.created_utc)
+                                    inserts[1].append(submission.url)
+                                    inserts[2].append(submission.media)
+                                    inserts[3].append(submission.permalink)
+                                    inserts[4].append(submission.selftext)
+                                    inserts[5].append(submission.author)
+                                    inserts[6].append(submission.score)
+                                    inserts[7].append(submission.score)
+
+                                with self.q.mutex:
+                                    self.q.queue.clear()
+                                self.q.put('doneRunningTop')
+                                break
+
+                    database.addPost(
+                                        inserts[0]
+                                        inserts[1]
+                                        inserts[2]
+                                        inserts[3]
+                                        inserts[4]
+                                        inserts[5]
+                                        inserts[6]
+                                        inserts[7]
                                         top,
                                         hot,
                                         new,
                                         self.subSettings[0],
                                     )
-                                    print('{} --> Added {}'.format(
-                                        post,
-                                        submission.permalink,
-                                    ))
-                                with self.q.mutex:
-                                    self.q.queue.clear()
-                                self.q.put('doneRunningTop')
-                                break
+                    print('{} --> Added {}'.format(
+                        post,
+                        submission.permalink,
+                    ))
 
             except Exception as e:
                 print(traceback.format_exc())

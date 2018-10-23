@@ -669,3 +669,60 @@ def addPost(date, contentUrl, media, url, text, author, score, title, top, hot, 
     conn.commit()
     c.close()
     print('Added new post - {}'.format(str(url)))
+
+
+# changes to addPost for multiple entries: all fields to be put into the database will be passed
+# in as arrays to be joined into the correct SQL insert format
+def addPostMultiple(date, contentUrl, media, url, text, author, score, title, top, hot, new, subreddit):
+    conn = sqlite3.connect(
+            'Posts{}.db'.format(
+                sub(
+                    '([a-zA-Z])',
+                    lambda x: x.groups()[0].upper(),
+                    subreddit,
+                    1,
+                )
+            )
+        )
+    c = conn.cursor()
+
+    rows = []
+
+    for i in range(len(date)): 
+      if text[i] != '&#x200B;' and text[i] != '':
+          content = text[i]
+      else:
+          if media[i] != None:
+              vidHash = hashVid(conn, media[i], url[i])
+              if isInt(vidHash.replace(' ', '')):
+                  content = vidHash
+              else:
+                  content = contentUrl[i]
+          elif 'gif' in contentUrl[i] and not (contentUrl[i].endswith('gifv') or 'gifs' in contentUrl[i]):
+              gifHash = hashGif(conn, contentUrl[i], url[i])
+              if isInt(gifHash.replace(' ', '')):
+                  content = gifHash
+              else:
+                  content = contentUrl
+          elif 'png' in contentUrl or 'jpg' in contentUrl:
+              imgHash = hashImg(conn, contentUrl[i], url[i])
+              if isInt(imgHash):
+                  content = imgHash
+              else:
+                  content = contentUrl[i]
+          else:
+              content = contentUrl[i]
+      if top:
+          locationVar = 'top'
+      elif hot:
+          locationVar = 'hot'
+      elif new:
+          locationVar = 'new'
+
+      rows.append((int(date), str(content), str(url), str(locationVar), str(author), int(score), str(title)))
+
+    values = ', '.join(map(str, rows))
+    c.execute('INSERT INTO Posts (Date, Content, Url, Location, Author, Score, Title) VALUES (?);',(values),)
+    conn.commit()
+    c.close()
+    print('Added new post - {}'.format(str(url)))
